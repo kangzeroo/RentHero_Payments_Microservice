@@ -1,1 +1,1 @@
-docker run --log-opt max-size=500m -d -it -p 7107:7107 --name=payments_microservice payments_microservice npm run staging -- --host=0.0.0.0
+docker run --log-opt max-size=500m -d -it -p 7105:7105 --name=payments_microservice payments_microservice npm run staging -- --host=0.0.0.0
