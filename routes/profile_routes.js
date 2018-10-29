@@ -17,7 +17,11 @@ exports.get_corporation_billing = (req, res, next) => {
     .then((data) => {
       card = data
 
-      return subscriptionsAPI.get_all_subscriptions_for_customer(customer.customer_id)
+      if (customer && customer.customer_id) {
+        return subscriptionsAPI.get_all_subscriptions_for_customer(customer.customer_id)
+      } else {
+        return Promise.resolve({})
+      }
     })
     .then((data) => {
       subscriptions = data
