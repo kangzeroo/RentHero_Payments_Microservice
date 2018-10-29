@@ -6,7 +6,7 @@ exports.create_subscription = (customer_id, plan_id) => {
     const subscription = {
       customer: customer_id,
       items: [{ plan: plan_id, }],
-      // billing_cycle_anchor: // This defaults to when the subscription was created, or if a trial period is used, the trial end. It can also be set explicitly at creation.
+      tax_percent: 13.0,
     }
 
     stripe.subscriptions.create(subscription)
@@ -16,6 +16,22 @@ exports.create_subscription = (customer_id, plan_id) => {
       })
       .catch((err) => {
         console.log('ERROR IN stripe/subscriptions_api-create_subscription: ', err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+
+exports.get_all_subscriptions_for_customer = (customer_id) => {
+  const p = new Promise((res, rej) => {
+    stripe.subscriptions.list({ customer: customer_id })
+      .then((data) => {
+        console.log(data)
+        res(data.data)
+      })
+      .catch((err) => {
+        console.log('ERROR IN stripe/subscriptions_api-get_all_subscriptions_for_customer: ', err)
         rej(err)
       })
   })

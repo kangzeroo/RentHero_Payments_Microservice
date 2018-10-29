@@ -1,4 +1,8 @@
-const customerAPI = require('../api/stripe/customers_api')
+const customersAPI = require('../api/stripe/customers_api')
+const productsAPI = require('../api/stripe/products_api')
+const plansAPI = require('../api/stripe/plans_api')
+const subscriptionsAPI = require('../api/stripe/subscriptions_api')
+
 const PaymentsQueries = require('../Postgres/Queries/PaymentsQueries')
 
 // tokenObj
@@ -38,13 +42,20 @@ const PaymentsQueries = require('../Postgres/Queries/PaymentsQueries')
 exports.submit_billing_info = (req, res, next) => {
   const tokenObj = req.body.token
   const staffObj = req.body.staff
+  const origin = req.body.origin
   let custObj
   let cardObj
+  let subscrObj
 
-  customerAPI.create_customer(tokenObj.id, staffObj.email)
+  customersAPI.create_customer(tokenObj.id, staffObj.email)
     .then((data) => {
       console.log(data)
       custObj = data
+
+      return create_subscription_for_origin(custObj.id, origin)
+    })
+    .then((data) => {
+      subscrObj = data
 
       return PaymentsQueries.save_card(tokenObj.card)
     })
@@ -55,14 +66,42 @@ exports.submit_billing_info = (req, res, next) => {
     })
     .then((data) => {
       custObj = data
+
       res.json({
         message: 'successfully created customer',
-        custObj,
-        cardObj,
+        customer: custObj,
+        card: cardObj,
+        subscrObj,
       })
     })
     .catch((err) => {
       console.log('ERROR IN billing_routes-submit_billing_info: ', err)
       res.status(500).send('Failed to process billing information')
     })
+}
+
+const create_subscription_for_origin = (customer_id, origin) => {
+  const p = new Promise((res, rej) => {
+    console.log('CUSTOMER_ID: ', customer_id)
+    productsAPI.get_product_for_origin(origin)
+      .then((data) => {
+        return plansAPI.get_plans_for_product(data.id)
+      })
+      .then((plans) => {
+        const arrayOfPromises = plans.map((plan) => {
+          return subscriptionsAPI.create_subscription(customer_id, plan.id)
+        })
+
+        return Promise.all(arrayOfPromises)
+      })
+      .then((data) => {
+        console.log(data)
+        res(data)
+      })
+      .catch((err) => {
+        console.log('ERROR IN billing_routes-create_subscription_for_origin: ', err)
+        rej(err)
+      })
+  })
+  return p
 }

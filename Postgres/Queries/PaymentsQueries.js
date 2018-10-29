@@ -8,16 +8,6 @@ const uuid = require('uuid')
 
 const query = promisify(pool.query)
 
-// stringify_rows: Convert each row into a string
-const stringify_rows = res => res.rows.map(row => JSON.stringify(row))
-
-const json_rows = res => res.map(row => JSON.parse(row))
-//log_through: log each row
-const log_through = data => {
-  // console.log(data)
-  return data
-}
-
 exports.save_card = (cardObj) => {
   const p = new Promise((res, rej) => {
     const values = [cardObj.id, cardObj.object, cardObj.address_city, cardObj.address_country, cardObj.address_line1,
