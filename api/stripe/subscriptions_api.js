@@ -1,12 +1,16 @@
 const STRIPE_API_KEY = require(`../../credentials/${process.env.NODE_ENV}/stripe_keys`).API_KEY
 const stripe = require("stripe")(STRIPE_API_KEY);
+const moment = require('moment')
 
 exports.create_subscription = (customer_id, plan_id) => {
+  // console.log('3 minutes',moment().add(3, 'minutes').unix())
+  // console.log('3 days', moment().add(3, 'days').unix())
   const p = new Promise((res, rej) => {
     const subscription = {
       customer: customer_id,
       items: [{ plan: plan_id, }],
       tax_percent: 13.0,
+      trial_end: moment().add(3, 'days').unix()
     }
 
     stripe.subscriptions.create(subscription)
