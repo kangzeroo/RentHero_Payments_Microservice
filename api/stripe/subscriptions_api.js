@@ -10,7 +10,7 @@ exports.create_subscription = (customer_id, plan_id) => {
       customer: customer_id,
       items: [{ plan: plan_id, }],
       tax_percent: 13.0,
-      trial_end: moment().add(3, 'days').unix()
+      trial_end: moment().add(7, 'days').unix()
     }
 
     stripe.subscriptions.create(subscription)
